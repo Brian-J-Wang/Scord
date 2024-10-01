@@ -1,0 +1,27 @@
+{
+  "name": "scoreboard-bot",
+  "version": "1.0.0",
+  "description": "\"Scoreboard bot for keeping track of discord competitions\"",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon ./dist/app.js",
+    "compile": "npx tsc"
+  },
+  "author": "Brian Wang",
+  "license": "ISC",
+  "dependencies": {
+    "discord-interactions": "^4.1.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "mongoose": "^8.7.0",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.4",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.7.3",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
+  }
+}
