@@ -1,5 +1,5 @@
 "use strict";
-import Scoreboard from "../Models/scoreboard";
+import Scoreboard, { getTop3Players, getTopPlayers } from "../Models/scoreboard";
 import { Request, Response } from "express";
 import { Interaction } from "../utils/parseInteraction";
 const dotenv = require('dotenv');
@@ -8,7 +8,7 @@ dotenv.config();
 export function newScoreboard(body: Interaction, res: Response) {
     Scoreboard.create({
         guild: body.guild,
-        author: body.user,
+        author: body.user.id,
         name: body.options.name,
         players: []  
     }).then(scoreboard => {
@@ -41,19 +41,20 @@ export function newScoreboard(body: Interaction, res: Response) {
 }
 
 export function joinScoreboard(body: Interaction, res : Response) {
+
+    console.log(body);
+
     function extractScoreboardId() {
         //interaction is a application command
         if (body.type == 2) {
             return body.options.id;
-        //interaction type is a 
+        //interaction type is a message component
         } else if (body.type == 3) {
             return body.options.join;
         }
     }
 
     const scoreboardId = extractScoreboardId();
-
-    console.log(scoreboardId);
 
     addUserToScoreboard(body.user, scoreboardId)
     .then((scoreboard : any) => {
@@ -79,7 +80,7 @@ export function joinScoreboard(body: Interaction, res : Response) {
 //joining the scoreboard through this method will not update the original message that sent the scoreboard...
 //need user id, and the scoreboard id.
     //any issues will return a error code,
-function addUserToScoreboard(userId : string, scoreboardId : string ) : any {
+function addUserToScoreboard(user : { name: string, id: string }, scoreboardId : string ) : any {
 
     return Scoreboard.findById(scoreboardId)
     .orFail(() => {
@@ -89,7 +90,7 @@ function addUserToScoreboard(userId : string, scoreboardId : string ) : any {
     .then(scoreboard => {
 
         //@ts-ignore
-        if (scoreboard.userExists(userId)) {
+        if (scoreboard.userExists(user.id)) {
             const error = new Error(`you've already joined ${scoreboard.name}`);
             throw error;
         }
@@ -100,7 +101,8 @@ function addUserToScoreboard(userId : string, scoreboardId : string ) : any {
         }
 
         scoreboard.players.push({
-            id: userId
+            id: user.id,
+            name: user.name
         });
 
         return scoreboard.save();
@@ -154,4 +156,58 @@ export function startScoreboard(req : Request, res : Response) {
             }
         }).end();
     });
+}
+
+export function addPointScoreboard(body : Interaction, res : Response) {
+    Scoreboard.findById(body.options.scoreboard_id)
+    .orFail(() => {
+        const error = new Error('scoreboard not found');
+        throw error;
+    })
+    .then(scoreboard => {
+        if (scoreboard.state == 'lobby') {
+            const error = new Error('The scoreboard has not started yet!');
+            throw error;
+        }
+
+        if (scoreboard.state == 'complete') {
+            const error = new Error('The scoreboard has been completed!');
+            throw error;
+        }
+
+        let player = scoreboard.players.find(player => {
+            return (player.id == body.options.user_id);
+        })
+
+        if (player == undefined) {
+            const error = new Error('Player not found');
+            throw error;
+        }
+
+        player.score += body.options.value;
+
+        scoreboard.save();  //saving parent document saves the sub-doc.
+
+        res.send({
+            type: 4,
+            data: {
+                content: `${player.name} now has ${player.score} points!`,
+                flags: 64
+            }
+        })
+    })
+    .catch(err => {
+        res.send({
+            type: 4,
+            data: {
+                content: err.message,
+                flags: 64
+            }
+        })
+    })
+}
+
+//peek scoreboard currently shows the top 3 players and the player's position
+export function peekScoreboard(body : Interaction, res : Response) {
+
 }

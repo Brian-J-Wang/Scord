@@ -3,7 +3,10 @@ export interface Interaction {
     token: string,
     name: string,
     guild: string,
-    user: string,
+    user: {
+        name: string,
+        id: string,
+    },
     options: any
 }
 
@@ -12,14 +15,22 @@ export interface Button {
     button: string
 }
 
+//contains the name of the focused element
+export interface Autocomplete {
+    focused: string
+}
+
 //parses the interaction object into a more concise format.
-export function parseInteraction(body: any) : Interaction {
+export function parseInteraction(body : any) : Interaction {
     const output : Interaction = {
         type: body.type,
         token: body.token,
         name: body.data.options[0].name,
         guild: body.guild_id,
-        user: body.member.user.id,
+        user: {
+            name: body.member.user.username,
+            id: body.member.user.id
+        },
         options: {}
     };
 
@@ -29,7 +40,6 @@ export function parseInteraction(body: any) : Interaction {
         });
     }
 
-    console.log(output);
     return output;
 }
 
@@ -40,7 +50,10 @@ export function parseMessageComponent(body : any) : Interaction & Button {
         button: "",
         name: body.message.interaction.name,
         guild: body.guild_id,
-        user: body.member.user.id,
+        user: {
+            name: body.member.user.username,
+            id: body.member.user.id
+        },
         options: {}
     }
 
@@ -48,9 +61,33 @@ export function parseMessageComponent(body : any) : Interaction & Button {
     output.options[cId[0]] = cId[1];
     output.button = cId[0];
 
-    console.log(output);
-
     return output;
 }
 
-export default parseInteraction
+export function parseAutocomplete(body : any) : Interaction & Autocomplete {
+    const output : Interaction & Autocomplete = {
+        type: body.type,
+        token: body.token,
+        name: body.data.options[0].name,
+        guild: body.guild_id,
+        user: {
+            name: body.member.user.username,
+            id: body.member.user.id
+        },
+        focused: "",
+        options: {}
+    }
+
+    if (body.data.options[0].options.length != 0) {
+        body.data.options[0].options.forEach((element : any) => {
+
+            output.options[element.name] = element.value;
+
+            if (element.focused) {
+                output.focused = element.name;
+            }
+        });
+    }
+
+    return output;
+}

@@ -42,7 +42,8 @@ const scoreboardSchema = new mongoose.Schema({
 scoreboardSchema.methods.getTopPlayer = function getTopPlayer() {
 }
 
-scoreboardSchema.methods.getTop3Playes = function getTop3Playes() {
+scoreboardSchema.methods.getTop3Playes = function getTop3Playes(scoreboard_id) {
+    this.find()
 }
 
 scoreboardSchema.methods.getPosition = function getPosition(id) {
@@ -54,7 +55,26 @@ scoreboardSchema.methods.userExists = function userExists(id) {
     }) != undefined;
 };
 
+//id is the discord user id
+scoreboardSchema.methods.getUser = function getUser(id) {
+    return this.players.find(player => player.id == id);
+}
+
 const Scoreboard = mongoose.model('scoreboards', scoreboardSchema);
 
 export default Scoreboard;
 
+export function getTopPlayers(scoreboard_id, limit) {
+    return Scoreboard.findOne({ _id: scoreboard_id}, { players: 1, _id: 0 })
+    .orFail(() => {
+        const error = new Error('Scoreboard was not found');
+        throw error;
+    })
+    .then((result) => {
+        let { players } = result;
+
+        players = players.sort((a, b) => b.score - a.score );
+
+        return players.slice(0, limit);
+    })
+}

@@ -6,6 +6,11 @@ const playerDataSchema = new mongoose.Schema({
         required: true,
         immutable: true,
     },
+    name: {
+        type: String,
+        required: true,
+        immutable: true,
+    },
     score: {
         type: Number,
         required: true,

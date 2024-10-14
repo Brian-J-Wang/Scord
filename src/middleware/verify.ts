@@ -13,7 +13,7 @@ export default function verify(req: Request, res: Response, next : NextFunction)
     if (!verified) {
         console.error('invalid request signature');
         res.status(401).send('invalid request signature').end();
+    } else {
+        next();
     }
-
-    next();
 }
