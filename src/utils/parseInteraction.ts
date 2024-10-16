@@ -22,13 +22,15 @@ export interface Autocomplete {
 
 //parses the interaction object into a more concise format.
 export function parseInteraction(body : any) : Interaction {
+    console.log(body);
+
     const output : Interaction = {
         type: body.type,
         token: body.token,
         name: body.data.options[0].name,
         guild: body.guild_id,
         user: {
-            name: body.member.user.username,
+            name: body.member.user.global_name,
             id: body.member.user.id
         },
         options: {}
@@ -51,7 +53,7 @@ export function parseMessageComponent(body : any) : Interaction & Button {
         name: body.message.interaction.name,
         guild: body.guild_id,
         user: {
-            name: body.member.user.username,
+            name: body.member.user.global_name,
             id: body.member.user.id
         },
         options: {}
@@ -71,7 +73,7 @@ export function parseAutocomplete(body : any) : Interaction & Autocomplete {
         name: body.data.options[0].name,
         guild: body.guild_id,
         user: {
-            name: body.member.user.username,
+            name: body.member.user.global_name,
             id: body.member.user.id
         },
         focused: "",
