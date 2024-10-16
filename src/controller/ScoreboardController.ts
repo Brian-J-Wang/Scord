@@ -1,7 +1,8 @@
 "use strict";
-import Scoreboard, { getTop3Players, getTopPlayers } from "../Models/scoreboard";
+import Scoreboard, { getPlayerPositions, updateScore } from "../Models/scoreboard";
 import { Request, Response } from "express";
 import { Interaction } from "../utils/parseInteraction";
+import { formatLeaderboard, Leaderboard } from "../utils/leaderboardFormatter";
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -17,7 +18,7 @@ export function newScoreboard(body: Interaction, res: Response) {
         res.send({
             type: 4,
             data: {
-                content: `Scoreboard ${scoreboard.name}:${scoreboard.id} has been created`,
+                content: `Scoreboard ${scoreboard.name} has been created`,
                 components: [
                     {
                         "type" : 1,
@@ -41,9 +42,6 @@ export function newScoreboard(body: Interaction, res: Response) {
 }
 
 export function joinScoreboard(body: Interaction, res : Response) {
-
-    console.log(body);
-
     function extractScoreboardId() {
         //interaction is a application command
         if (body.type == 2) {
@@ -159,35 +157,9 @@ export function startScoreboard(req : Request, res : Response) {
 }
 
 export function addPointScoreboard(body : Interaction, res : Response) {
-    Scoreboard.findById(body.options.scoreboard_id)
-    .orFail(() => {
-        const error = new Error('scoreboard not found');
-        throw error;
-    })
-    .then(scoreboard => {
-        if (scoreboard.state == 'lobby') {
-            const error = new Error('The scoreboard has not started yet!');
-            throw error;
-        }
-
-        if (scoreboard.state == 'complete') {
-            const error = new Error('The scoreboard has been completed!');
-            throw error;
-        }
-
-        let player = scoreboard.players.find(player => {
-            return (player.id == body.options.user_id);
-        })
-
-        if (player == undefined) {
-            const error = new Error('Player not found');
-            throw error;
-        }
-
-        player.score += body.options.value;
-
-        scoreboard.save();  //saving parent document saves the sub-doc.
-
+    const { scoreboard_id, user_id, value } = body.options;
+    updateScore(scoreboard_id, user_id, value)
+    .then(player => {
         res.send({
             type: 4,
             data: {
@@ -204,10 +176,27 @@ export function addPointScoreboard(body : Interaction, res : Response) {
                 flags: 64
             }
         })
-    })
+    })    
 }
 
 //peek scoreboard currently shows the top 3 players and the player's position
 export function peekScoreboard(body : Interaction, res : Response) {
+    //get the scoreboard id
+    //get the top 3 players
+    //get the player's position
 
+    const { scoreboard_id } = body.options;
+    getPlayerPositions(scoreboard_id, 5, body.user.id)
+    .then((players) => {
+
+        const message = formatLeaderboard(players as unknown as Leaderboard);
+
+        res.send({
+            type: 4,
+            data: {
+                content: message,
+                flags: 64
+            }
+        })
+    })
 }

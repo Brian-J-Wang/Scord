@@ -42,16 +42,12 @@ export function addAutocomplete(body : Interaction & Autocomplete, res : Respons
             throw err;
         })
         .then((scoreboard) => {
-            console.log(scoreboard);
-
             response = scoreboard.players.map((player) => {
                 return {
                     name: player.name,
                     value: player.id.toString()
                 }
             })
-
-            console.log(response);
 
             res.send({
                 type: 8,

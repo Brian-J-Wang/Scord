@@ -26,7 +26,6 @@ router.use('/', (req, res) => {
             peekScoreboard(interaction, res);
         }
     } else if (interactionType == InteractionType.MESSAGE_COMPONENT) {
-        console.log(req.body);
         const interaction = parseMessageComponent(req.body);
 
         if (interaction.name == 'scoreboard new') {

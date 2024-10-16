@@ -15,6 +15,11 @@ const playerDataSchema = new mongoose.Schema({
         type: Number,
         required: true,
         default: 0
+    },
+    position: {
+        type: Number,
+        required: true,
+        default: 0
     }
 })
 

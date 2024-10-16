@@ -64,8 +64,9 @@ const Scoreboard = mongoose.model('scoreboards', scoreboardSchema);
 
 export default Scoreboard;
 
-export function getTopPlayers(scoreboard_id, limit) {
-    return Scoreboard.findOne({ _id: scoreboard_id}, { players: 1, _id: 0 })
+//returns the top {limit} of players and the position of the caller
+export function getPlayerPositions(scoreboard_id, limit, caller_id) {
+    return Scoreboard.findOne({ _id: scoreboard_id}, { name: 1, players: 1, _id: 0 })
     .orFail(() => {
         const error = new Error('Scoreboard was not found');
         throw error;
@@ -73,8 +74,56 @@ export function getTopPlayers(scoreboard_id, limit) {
     .then((result) => {
         let { players } = result;
 
-        players = players.sort((a, b) => b.score - a.score );
+        const top = players.slice(0, limit);
+        const caller = players.find((player) => {
+            return player.id == caller_id;
+        })
 
-        return players.slice(0, limit);
+        return {
+            name: result.name,
+            top : top,
+            caller : caller
+        }
     })
 }
+
+//sorting is only necessary whenever the score gets updated. 
+export function updateScore(scoreboard_id, user, amount) {
+    return Scoreboard.findById(scoreboard_id, { state: 1, players: 1 })
+    .orFail(() => {
+        const error = new Error('Scoreboard was not found');
+        throw error;
+    })
+    .then((result) => {
+        if (result.state == 'lobby') {
+            const error = new Error('The scoreboard has not started yet!');
+            throw error;
+        } else if (result.state == 'complete') {
+            const error = new Error('The scoreboard has been completed!');
+            throw error;
+        }
+
+        let { players } = result;
+
+        let scoringPlayer = players.find((player) => { return player.id == user; });
+
+        if (scoringPlayer == undefined) {
+            const error = new Error('Player was not found');
+            throw error;
+        }
+
+        scoringPlayer.score += amount;
+
+        players.sort((a, b) => b.score - a.score);
+
+        players.forEach((player, index) => {
+            player.position = index + 1;
+        })
+
+        result.save();
+
+        return scoringPlayer;
+    })
+}
+
+
