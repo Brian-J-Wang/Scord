@@ -157,7 +157,8 @@ export function startScoreboard(req : Request, res : Response) {
 }
 
 export function addPointScoreboard(body : Interaction, res : Response) {
-    const { scoreboard_id, user_id, value } = body.options;
+    const { scoreboard_id, user_id, value = 1 } = body.options;
+
     updateScore(scoreboard_id, user_id, value)
     .then(player => {
         res.send({
