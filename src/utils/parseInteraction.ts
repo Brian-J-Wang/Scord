@@ -22,8 +22,6 @@ export interface Autocomplete {
 
 //parses the interaction object into a more concise format.
 export function parseInteraction(body : any) : Interaction {
-    console.log(body);
-
     const output : Interaction = {
         type: body.type,
         token: body.token,

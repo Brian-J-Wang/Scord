@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import Scoreboard from "../Models/scoreboard";
+import Scoreboards from "../Models/scoreboard";
 import { Interaction, Autocomplete } from "../utils/parseInteraction";
 
 export function addAutocomplete(body : Interaction & Autocomplete, res : Response) {
     if (body.focused == 'scoreboard_id') {
         let response = [];
 
-        Scoreboard.find({guild: body.guild})
+        Scoreboards.find({guild: body.guild})
         .then(scoreboards => {
             response = scoreboards.map((scoreboard) => {
                 return {
@@ -29,7 +29,7 @@ export function addAutocomplete(body : Interaction & Autocomplete, res : Respons
 
         let response = [];
 
-        Scoreboard.findById(body.options.scoreboard_id)
+        Scoreboards.findById(body.options.scoreboard_id)
         .orFail(() => {
             res.send({
                 type: 8,
@@ -66,7 +66,7 @@ export function joinAutocomplete(body : Interaction & Autocomplete, res : Respon
     //the focused body is known to be id
     let response = [];
 
-    Scoreboard.find({guild: body.guild})
+    Scoreboards.find({guild: body.guild})
     .then(scoreboards => {
         response = scoreboards.map((scoreboard) => {
             return {
@@ -108,10 +108,22 @@ export function peekAutocomplete(body : Interaction & Autocomplete, res : Respon
     })
 }
 
+export function interfaceAutocomplete(body: Interaction & Autocomplete, res : Response) {
+    getScoreboardsFromGuild(body.guild)
+    .then(results => {
+        res.send({
+            type: 8,
+            data: {
+                choices: results
+            }
+        }).end();
+    })
+}
+
 function getScoreboardsFromGuild(guildId : string) {
     let response = [];
 
-    return Scoreboard.find({guild: guildId})
+    return Scoreboards.find({guild: guildId})
     .then(scoreboards => {
         response = scoreboards.map((scoreboard) => {
             return {

@@ -16,24 +16,38 @@ export interface Leaderboard {
     }
 }
 
+export interface LeaderboardOptions {
+    visibleOnlyToCaller: boolean,
+    specialHighlighting: SpecialHighlighting[]
+}
 
+interface SpecialHighlighting {
+    playerId: number
+    prefix: string,
+    suffix: string,
+}
 
-export function formatLeaderboard(input : Leaderboard) {
+export function formatLeaderboard(input : Leaderboard, options : LeaderboardOptions) {
     let output = '```ansi\r';
+    output += `\u001b[4mScoreboard for \u001b[1m${input.scoreboard_name}\r\u001b[0m\r`;
     output += '\u001b[4;37m\u001b[1mRANK \u001b[0m|\u001b[4;37m\u001b[1m PLAYER\t\t\t\t \u001b[0m|\u001b[4;37m\u001b[1m SCORE\u001b[0m\r'
     input.top.forEach((player) => {
-        if (player.id == input.caller.id) {
-            output += '\u001b[1;34m'
+
+        const specialHighlighting = options.specialHighlighting.find((element) => {
+            return element.playerId == player.id
+        })
+
+        if (specialHighlighting) {
+            output += specialHighlighting.prefix;
             output += parseLine(player);
-            output += '\u001b[0m'
+            output += specialHighlighting.suffix;
         } else {
             output += parseLine(player);
-        }
-        
+        }        
     })
 
     const isTopPlayer = input.top.some(player => player.id == input.caller.id);
-    if (!isTopPlayer) {
+    if (!isTopPlayer && options.visibleOnlyToCaller) {
         output += '...\r';
         output += parseLine(input.caller);
     }

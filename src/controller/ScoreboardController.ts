@@ -1,20 +1,18 @@
 "use strict";
-import Scoreboard, { getPlayerPositions, updateScore } from "../Models/scoreboard";
+import Scoreboards, { getPlayerPositions, updateScore } from "../Models/scoreboard";
 import { Request, Response } from "express";
 import { Interaction } from "../utils/parseInteraction";
-import { formatLeaderboard, Leaderboard } from "../utils/leaderboardFormatter";
+import { formatLeaderboard, Leaderboard, LeaderboardOptions } from "../utils/leaderboardFormatter";
 const dotenv = require('dotenv');
 dotenv.config();
 
 export function newScoreboard(body: Interaction, res: Response) {
-    Scoreboard.create({
+    Scoreboards.create({
         guild: body.guild,
         author: body.user.id,
         name: body.options.name,
         players: []  
     }).then(scoreboard => {
-        console.log(`scoreboard id:${scoreboard.id} has been created`);
-
         res.send({
             type: 4,
             data: {
@@ -80,7 +78,7 @@ export function joinScoreboard(body: Interaction, res : Response) {
     //any issues will return a error code,
 function addUserToScoreboard(user : { name: string, id: string }, scoreboardId : string ) : any {
 
-    return Scoreboard.findById(scoreboardId)
+    return Scoreboards.findById(scoreboardId)
     .orFail(() => {
         const error = new Error('Scoreboard not found.');
         throw error;
@@ -111,10 +109,8 @@ function addUserToScoreboard(user : { name: string, id: string }, scoreboardId :
 export function startScoreboard(req : Request, res : Response) {
     const { body } = req;
     const params = body.data.options[0].options[0];
-
-    console.log(`starting scoreboard:${params.value}`);
-
-    Scoreboard.findById(params.value)
+    
+    Scoreboards.findById(params.value)
     .orFail(() => {
         const error = new Error('Scoreboard not found');
         throw error;
@@ -160,11 +156,11 @@ export function addPointScoreboard(body : Interaction, res : Response) {
     const { scoreboard_id, user_id, value = 1 } = body.options;
 
     updateScore(scoreboard_id, user_id, value)
-    .then(player => {
+    .then(result => {
         res.send({
             type: 4,
             data: {
-                content: `${player.name} now has ${player.score} points!`,
+                content: `${result.caller.name} now has ${result.caller.score} points!`,
                 flags: 64
             }
         })
@@ -189,8 +185,12 @@ export function peekScoreboard(body : Interaction, res : Response) {
     const { scoreboard_id } = body.options;
     getPlayerPositions(scoreboard_id, 5, body.user.id)
     .then((players) => {
+        const options : LeaderboardOptions = {
+            visibleOnlyToCaller: false,
+            specialHighlighting: []
+        }
 
-        const message = formatLeaderboard(players as unknown as Leaderboard);
+        const message = formatLeaderboard(players as unknown as Leaderboard, options);
 
         res.send({
             type: 4,
@@ -199,5 +199,44 @@ export function peekScoreboard(body : Interaction, res : Response) {
                 flags: 64
             }
         })
+    })
+}
+
+export function interfaceScoreboard(body : Interaction, res : Response) {
+    const { scoreboard_id } = body.options;
+    getPlayerPositions(scoreboard_id, 10, body.user.id)
+    .then((players) => {
+        const options : LeaderboardOptions = {
+            visibleOnlyToCaller: false,
+            specialHighlighting: []
+        }
+
+        const message = formatLeaderboard(players as unknown as Leaderboard, options);
+
+        res.send({
+            type: 4,
+            data: {
+                content: message,
+                "components": [
+                    {
+                        "type": 1,
+                        "components": [
+                            {
+                                "type": 2,
+                                "label": "+1",
+                                "style": 3,
+                                "custom_id": `inc:${scoreboard_id}`
+                            },
+                            {
+                                "type": 2,
+                                "label": "-1",
+                                "style": 4,
+                                "custom_id": `dec:${scoreboard_id}`
+                            }
+                        ]
+                    }
+                ]
+            }
+        });
     })
 }

@@ -1,9 +1,10 @@
 import { InteractionType } from 'discord-interactions';
 import express from 'express';
 import pong from '../controller/pong'
-import { joinScoreboard, newScoreboard, startScoreboard, addPointScoreboard, peekScoreboard } from '../controller/ScoreboardController';
-import { addAutocomplete, joinAutocomplete, peekAutocomplete, startAutocomplete } from '../controller/autocompleteController';
+import { joinScoreboard, newScoreboard, startScoreboard, addPointScoreboard, peekScoreboard, interfaceScoreboard } from '../controller/ScoreboardController';
+import { addAutocomplete, interfaceAutocomplete, joinAutocomplete, peekAutocomplete, startAutocomplete } from '../controller/autocompleteController';
 import { parseInteraction, parseAutocomplete, parseMessageComponent } from '../utils/parseInteraction';
+import { updateScoreboard } from '../controller/componentController';
 const router = express.Router();
 
 router.use('/', (req, res) => {
@@ -24,6 +25,8 @@ router.use('/', (req, res) => {
             addPointScoreboard(interaction, res);
         } else if (interaction.name == 'peek') {
             peekScoreboard(interaction, res);
+        } else if (interaction.name == 'interface') {
+            interfaceScoreboard(interaction, res);
         }
     } else if (interactionType == InteractionType.MESSAGE_COMPONENT) {
         const interaction = parseMessageComponent(req.body);
@@ -32,6 +35,9 @@ router.use('/', (req, res) => {
             if (interaction.button == 'join') {
                 joinScoreboard(interaction, res);
             }
+        }
+        if (interaction.name == 'scoreboard interface') {
+            updateScoreboard(interaction, res);
         }
     } else if (interactionType == InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE) {
         const interaction = parseAutocomplete(req.body);
@@ -44,6 +50,8 @@ router.use('/', (req, res) => {
             startAutocomplete(interaction, res);
         } else if (interaction.name == 'peek') {
             peekAutocomplete(interaction, res);
+        } else if (interaction.name == 'interface') {
+            interfaceAutocomplete(interaction, res)
         }
     }
 })

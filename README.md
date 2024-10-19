@@ -9,3 +9,5 @@ Discord score-keeping bot, rewritten in typescript.
 - improve position sorting algorithm in scoreboard.js.
 - change names to be the name used in specific server.
 
+- /scoreboard interface [scoreboard_id] will created a user-only message that allows them to manipulate their points.
+
