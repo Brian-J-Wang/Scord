@@ -51,47 +51,41 @@ scoreboardSchema.methods.getUser = function getUser(id) {
     return this.players.find(player => player.id == id);
 }
 
-const Scoreboards = mongoose.model('scoreboards', scoreboardSchema);
-
-export default Scoreboards;
-
-//returns the top {limit} of players and the position of the caller
-export function getPlayerPositions(scoreboard_id, limit, caller_id) {
-    return Scoreboards.findOne({ _id: scoreboard_id}, { name: 1, players: 1, _id: 0 })
+// user : { name : string, id : number}, scoreboard_id : string
+scoreboardSchema.statics.addUserToScoreboard = function addUserToScoreboard(user, scoreboard_id) {
+    return this.findOne({ _id : scoreboard_id})
     .orFail(() => {
-        const error = new Error('Scoreboard was not found');
+        const error = new Error('Scoreboard Was Not Found. Was it deleted?');
         throw error;
     })
     .then((scoreboard) => {
-        let { players } = scoreboard;
-
-        const top = players.slice(0, limit);
-        const caller = players.find((player) => {
-            return player.id == caller_id;
-        })
-
-        return {
-            scoreboard_name: scoreboard.name,
-            top : top,
-            caller : caller
+        if (scoreboard.userExists(user.id)) {
+            const error = new Error(`You have already joined ${scoreboard.name}`);
+            throw error;
         }
-    })
+
+        if (scoreboard.state != 'lobby') {
+            const error = new Error('This Scoreboard has already started');
+            throw error
+        }
+
+        scoreboard.players.push({
+            id: user.id,
+            name: user.name
+        });
+
+        return scoreboard.save();
+
+    });
 }
 
-
-// {
-//     newPlayers:
-//     scoringPlayer:
-// }
-//sorting is only necessary whenever the score gets updated. 
-export function updateScore(scoreboard_id, caller_id, amount) {
-    return Scoreboards.findById(scoreboard_id, { state: 1, name: 1, players: 1 })
+scoreboardSchema.statics.updateScore = function updateScore(scoreboard_id, caller_id, amount) {
+    return this.findById(scoreboard_id, { state: 1, name: 1, players: 1 })
     .orFail(() => {
         const error = new Error('Scoreboard was not found');
         throw error;
     })
     .then((scoreboard) => {
-
         if (scoreboard.state == 'lobby') {
             const error = new Error('The scoreboard has not started yet!');
             throw error;
@@ -127,4 +121,28 @@ export function updateScore(scoreboard_id, caller_id, amount) {
     })
 }
 
+scoreboardSchema.statics.getPlayerPositions = function getPlayerPositions(scoreboard_id, limit, caller_id) {
+    return this.findOne({ _id: scoreboard_id}, { name: 1, players: 1, _id: 0 })
+    .orFail(() => {
+        const error = new Error('Scoreboard was not found');
+        throw error;
+    })
+    .then((scoreboard) => {
+        let { players } = scoreboard;
 
+        const top = players.slice(0, limit);
+        const caller = players.find((player) => {
+            return player.id == caller_id;
+        })
+
+        return {
+            scoreboard_name: scoreboard.name,
+            top : top,
+            caller : caller
+        }
+    })
+}
+
+const Scoreboards = mongoose.model('scoreboards', scoreboardSchema);
+
+export default Scoreboards;

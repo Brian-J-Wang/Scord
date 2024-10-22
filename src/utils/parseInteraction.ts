@@ -1,8 +1,8 @@
 export interface Interaction {
     type: number,
     token: string,
-    name: string,
     guild: string,
+    name: string,
     user: {
         name: string,
         id: string,
@@ -43,7 +43,7 @@ export function parseInteraction(body : any) : Interaction {
     return output;
 }
 
-export function parseMessageComponent(body : any) : Interaction & Button {
+export function parseComponent(body : any) : Interaction & Button {
     const output : Interaction & Button = {
         type: body.type,
         token: body.token,

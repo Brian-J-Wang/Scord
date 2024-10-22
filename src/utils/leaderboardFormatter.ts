@@ -23,8 +23,7 @@ export interface LeaderboardOptions {
 
 interface SpecialHighlighting {
     playerId: number
-    prefix: string,
-    suffix: string,
+    highlight: string,
 }
 
 export function formatLeaderboard(input : Leaderboard, options : LeaderboardOptions) {
@@ -38,9 +37,9 @@ export function formatLeaderboard(input : Leaderboard, options : LeaderboardOpti
         })
 
         if (specialHighlighting) {
-            output += specialHighlighting.prefix;
+            output += specialHighlighting.highlight;
             output += parseLine(player);
-            output += specialHighlighting.suffix;
+            output += "\u001b[0m"
         } else {
             output += parseLine(player);
         }        
