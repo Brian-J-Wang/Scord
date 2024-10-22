@@ -1,73 +1,14 @@
 import { Request, Response } from "express";
 import Scoreboards from "../Models/scoreboard";
-import { Interaction, Autocomplete } from "../utils/parseInteraction";
 
-export function addAutocomplete(body : Interaction & Autocomplete, res : Response) {
-    if (body.focused == 'scoreboard_id') {
-        let response = [];
+export function getGuildScoreboards(req : Request, res : Response) {
+    console.log(req.body);
 
-        Scoreboards.find({guild: body.guild})
-        .then(scoreboards => {
-            response = scoreboards.map((scoreboard) => {
-                return {
-                    name: scoreboard.name,
-                    value: scoreboard._id
-                };
-            });
-
-            res.send({
-                type: 8,
-                data: {
-                    choices: response
-                }
-            });
-        })
-    }
-
-    if (body.focused == 'user_id') {
-        //get the name of the users from the active scoreboard...?
-
-        let response = [];
-
-        Scoreboards.findById(body.options.scoreboard_id)
-        .orFail(() => {
-            res.send({
-                type: 8,
-                data: {
-                    choices: []
-                }
-            })
-
-            const err = new Error('Scoreboard was not found');
-            throw err;
-        })
-        .then((scoreboard) => {
-            response = scoreboard.players.map((player) => {
-                return {
-                    name: player.name,
-                    value: player.id.toString()
-                }
-            })
-
-            res.send({
-                type: 8,
-                data: {
-                    choices: response
-                }
-            });
-        })
-        .catch((err) => {
-            console.log(err);
-        })
-    }
-}
-
-export function joinAutocomplete(body : Interaction & Autocomplete, res : Response) {
-    //the focused body is known to be id
     let response = [];
 
-    Scoreboards.find({guild: body.guild})
+    Scoreboards.find({guild: req.body.guild})
     .then(scoreboards => {
+
         response = scoreboards.map((scoreboard) => {
             return {
                 name: scoreboard.name,
@@ -82,57 +23,35 @@ export function joinAutocomplete(body : Interaction & Autocomplete, res : Respon
             }
         });
     })
-}
-
-export function startAutocomplete(body : Interaction & Autocomplete, res : Response) {
-    getScoreboardsFromGuild(body.guild)
-    .then(results => {
-        res.send({
-            type: 8,
-            data: {
-                choices: results
-            }
-        }).end();
+    .catch((err) => {
+        console.log(err);
     })
 }
 
-export function peekAutocomplete(body : Interaction & Autocomplete, res : Response) {
-    getScoreboardsFromGuild(body.guild)
-    .then(results => {
-        res.send({
-            type: 8,
-            data: {
-                choices: results
-            }
-        }).end();
-    })
-}
-
-export function interfaceAutocomplete(body: Interaction & Autocomplete, res : Response) {
-    getScoreboardsFromGuild(body.guild)
-    .then(results => {
-        res.send({
-            type: 8,
-            data: {
-                choices: results
-            }
-        }).end();
-    })
-}
-
-function getScoreboardsFromGuild(guildId : string) {
+export function getUsersFromScoreboard(req : Request, res : Response) {
     let response = [];
 
-    return Scoreboards.find({guild: guildId})
-    .then(scoreboards => {
-        response = scoreboards.map((scoreboard) => {
+    Scoreboards.findById(req.body.options.scoreboard_id)
+    .orFail(() => {
+        const err = new Error('Scoreboard was not found');
+        throw err;
+    })
+    .then((scoreboard) => {
+        response = scoreboard.players.map((player) => {
             return {
-                name: scoreboard.name,
-                value: scoreboard._id
-            };
-        });
+                name: player.name,
+                value: player.id.toString()
+            }
+        })
 
-        return response;
+        res.send({
+            type: 8,
+            data: {
+                choices: response
+            }
+        });
+    })
+    .catch((err) => {
+        console.log(err);
     })
 }
-

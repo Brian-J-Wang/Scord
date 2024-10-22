@@ -1,28 +1,46 @@
-import { updateScore } from "../Models/scoreboard";
+import Scoreboards from "../Models/scoreboard";
 import { Request, Response } from "express";
 import { formatLeaderboard, Leaderboard, LeaderboardOptions } from "../utils/leaderboardFormatter";
 import { Button, Interaction } from "../utils/parseInteraction";
 
-export function updateScoreboard(interaction : Interaction & Button, res : Response) {
+export function joinScoreboard(req : Request, res : Response) {
+    //@ts-ignore
+    Scoreboards.addUserToScoreboard( req.body.user, req.body.options.join)
+    .then((scoreboard : any) => {
+        res.send({
+            type: 4,
+            data: {
+                content: `You've successfully joined ${scoreboard.name}`,
+                flags: 64
+            }
+        })
+    })
+    .catch((err : Error) => {
+        res.send({
+            type: 4,
+            data: {
+                content: err.message,
+                flags: 64
+            }
+        })
+    });
+}
 
-    const scoreboard_id = interaction.options[interaction.button];
-    const user = interaction.user.id;
-    const amount = interaction.button == 'inc' ? 1 : -1;
-    
-    updateScore(scoreboard_id, user, amount)
-    .then((results) => {
-
+export function increaseScore(req : Request, res : Response) {
+    //@ts-ignore
+    Scoreboards.updateScore(req.body.options.inc, req.body.user.id, 1)
+    .then((scoreboard : any) => {
         const options : LeaderboardOptions = {
             visibleOnlyToCaller: false,
             specialHighlighting: [
                 {
-                    playerId: Number.parseInt(user),
-                    prefix: (amount == 1) ? '\u001b[0;32m' : '\u001b[0;31m',
-                    suffix: "\u001b[0m"
+                    playerId: req.body.user.id,
+                    highlight: "\u001b[0;32m"
                 }
             ]
-        };
-        const message = formatLeaderboard(results as unknown as Leaderboard, options);
+        }
+
+        const message = formatLeaderboard(scoreboard as unknown as Leaderboard, options);
 
         res.send({
             type: 7,
@@ -36,19 +54,62 @@ export function updateScoreboard(interaction : Interaction & Button, res : Respo
                                 "type": 2,
                                 "label": "+1",
                                 "style": 3,
-                                "custom_id": `inc:${scoreboard_id}`
+                                "custom_id": `inc:${req.body.options.inc}`
                             },
                             {
                                 "type": 2,
                                 "label": "-1",
                                 "style": 4,
-                                "custom_id": `dec:${scoreboard_id}`
+                                "custom_id": `dec:${req.body.options.inc}`
                             }
                         ]
                     }
                 ]
             }
-        })
+        });
     })
+}
 
+export function decreaseScore(req : Request, res : Response) {
+//@ts-ignore
+Scoreboards.updateScore(req.body.options.dec, req.body.user.id, -1)
+.then((scoreboard : any) => {
+    const options : LeaderboardOptions = {
+        visibleOnlyToCaller: false,
+        specialHighlighting: [
+            {
+                playerId: req.body.user.id,
+                highlight: "\u001b[0;31m"
+            }
+        ]
+    }
+
+    const message = formatLeaderboard(scoreboard as unknown as Leaderboard, options);
+
+    res.send({
+        type: 7,
+        data: {
+            content: message,
+            "components": [
+                {
+                    "type": 1,
+                    "components": [
+                        {
+                            "type": 2,
+                            "label": "+1",
+                            "style": 3,
+                            "custom_id": `inc:${req.body.options.dec}`
+                        },
+                        {
+                            "type": 2,
+                            "label": "-1",
+                            "style": 4,
+                            "custom_id": `dec:${req.body.options.dec}`
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+})
 }
