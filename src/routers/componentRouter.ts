@@ -1,6 +1,6 @@
 import express from 'express';
 import { parseComponent } from '../utils/parseInteraction';
-import { decreaseScore, increaseScore, joinScoreboard } from '../controller/componentController';
+import { cancelDeleteScoreboard, confirmDeleteScoreboard, decreaseScore, increaseScore, joinScoreboard } from '../controller/componentController';
 
 const componentRouter = express.Router();
 
@@ -15,5 +15,9 @@ componentRouter.post('/join', joinScoreboard);
 componentRouter.post('/inc', increaseScore);
 
 componentRouter.post('/dec', decreaseScore);
+
+componentRouter.post('/delete', confirmDeleteScoreboard);
+
+componentRouter.post('/cancel', cancelDeleteScoreboard);
 
 export default componentRouter;

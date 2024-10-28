@@ -1,6 +1,6 @@
 import express from "express"
 import { parseInteraction } from "../utils/parseInteraction";
-import { addPointScoreboard, interfaceScoreboard, JoinScoreboard, NewScoreboard, peekScoreboard, startScoreboard } from "../controller/appCommandController";
+import { addPointScoreboard, deleteScoreboard, interfaceScoreboard, JoinScoreboard, NewScoreboard, peekScoreboard, startScoreboard } from "../controller/appCommandController";
 
 const appCommandRouter = express.Router();
 
@@ -21,6 +21,8 @@ appCommandRouter.post('/add', addPointScoreboard);
 appCommandRouter.post('/interface', interfaceScoreboard);
 
 appCommandRouter.post('/peek', peekScoreboard);
+
+appCommandRouter.post('/remove', deleteScoreboard);
 
 export default appCommandRouter;
 

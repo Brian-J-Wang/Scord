@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Scoreboards from "../Models/scoreboard";
 import { Interaction } from "../utils/parseInteraction";
 import { formatLeaderboard, Leaderboard, LeaderboardOptions } from "../utils/leaderboardFormatter";
+import { InteractionResponseType } from "discord-interactions";
 
 export function NewScoreboard(req : Request, res : Response) {
     const body : Interaction = req.body;
@@ -197,4 +198,54 @@ export function peekScoreboard(req : Request, res : Response) {
             }
         })
     })
+}
+
+export function deleteScoreboard(req : Request, res : Response) {
+    const { scoreboard_id } = req.body.options;
+
+    Scoreboards.findById(scoreboard_id)
+    .orFail(() => {
+        const error = new Error(`Cannot find scoreboard with id:${scoreboard_id}`);
+        throw error;
+    })
+    .then((scoreboard) => {
+        res.send({
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+                content: `Are you sure you want to delete ${scoreboard.name}?`,
+                "components": [
+                    {
+                        "type": 1,
+                        "components": [
+                            {
+                                "type": 2,
+                                "label": "Yes",
+                                "style": 4,
+                                "custom_id": `delete:${scoreboard_id}`
+                            },
+                            {
+                                "type": 2,
+                                "label": "Nevermind",
+                                "style": 2,
+                                "custom_id": `cancel:${scoreboard_id}`
+                            }
+                        ]
+                    }
+                ],
+                flags: 64
+            }
+            
+        });
+    })
+    .catch((err) => {
+        res.send({
+            type: 4,
+            data: {
+                content: err.message,
+                flags: 64
+            }
+        })
+    })
+
+    
 }

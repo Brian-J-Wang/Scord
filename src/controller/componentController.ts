@@ -1,7 +1,6 @@
 import Scoreboards from "../Models/scoreboard";
 import { Request, Response } from "express";
 import { formatLeaderboard, Leaderboard, LeaderboardOptions } from "../utils/leaderboardFormatter";
-import { Button, Interaction } from "../utils/parseInteraction";
 
 export function joinScoreboard(req : Request, res : Response) {
     //@ts-ignore
@@ -112,4 +111,44 @@ Scoreboards.updateScore(req.body.options.dec, req.body.user.id, -1)
         }
     });
 })
+}
+
+export function confirmDeleteScoreboard(req : Request, res : Response) {
+
+    console.log(req.body);
+
+    Scoreboards.findByIdAndDelete(req.body.options.delete)
+    .orFail(() => {
+        const error = new Error("Scoreboard not found");
+        throw error;
+    })
+    .then((scoreboard) => {
+        res.send({
+            type: 7,
+            data: {
+                content: `${scoreboard.name} has been successfully deleted`,
+                "components": []
+            }
+        })
+    })
+    .catch((err) => {
+        res.send({
+            type: 7,
+            data: {
+                content: err.message,
+                "components": []
+            }
+        })
+    })
+}
+
+export function cancelDeleteScoreboard(req: Request, res: Response) {
+    res.send({
+        type: 7,
+        data: {
+            content: "Deletion cancelled",
+            flags: 64,
+            "components": []
+        }
+    })
 }
