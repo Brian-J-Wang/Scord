@@ -3,6 +3,7 @@ import Scoreboards from "../Models/scoreboard";
 import { Interaction } from "../utils/parseInteraction";
 import { formatLeaderboard, Leaderboard, LeaderboardOptions } from "../utils/leaderboardFormatter";
 import { InteractionResponseType } from "discord-interactions";
+import { ScoreboardNotFoundError } from "../utils/error";
 
 export function NewScoreboard(req : Request, res : Response) {
     const body : Interaction = req.body;
@@ -66,8 +67,7 @@ export function JoinScoreboard(req : Request, res : Response) {
 export function startScoreboard(req : Request, res : Response) {    
     Scoreboards.findById(req.body.options.scoreboard_id)
     .orFail(() => {
-        const error = new Error('Scoreboard not found');
-        throw error;
+        throw ScoreboardNotFoundError;
     })
     .then(scoreboard => {
 
@@ -205,8 +205,7 @@ export function deleteScoreboard(req : Request, res : Response) {
 
     Scoreboards.findById(scoreboard_id)
     .orFail(() => {
-        const error = new Error(`Cannot find scoreboard with id:${scoreboard_id}`);
-        throw error;
+        throw ScoreboardNotFoundError;
     })
     .then((scoreboard) => {
         res.send({

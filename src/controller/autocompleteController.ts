@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Scoreboards from "../Models/scoreboard";
+import { ScoreboardNotFoundError } from "../utils/error";
 
 export function getGuildScoreboards(req : Request, res : Response) {
     console.log(req.body);
@@ -33,8 +34,7 @@ export function getUsersFromScoreboard(req : Request, res : Response) {
 
     Scoreboards.findById(req.body.options.scoreboard_id)
     .orFail(() => {
-        const err = new Error('Scoreboard was not found');
-        throw err;
+        throw ScoreboardNotFoundError;
     })
     .then((scoreboard) => {
         response = scoreboard.players.map((player) => {

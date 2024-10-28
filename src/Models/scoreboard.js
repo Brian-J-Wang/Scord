@@ -55,8 +55,7 @@ scoreboardSchema.methods.getUser = function getUser(id) {
 scoreboardSchema.statics.addUserToScoreboard = function addUserToScoreboard(user, scoreboard_id) {
     return this.findOne({ _id : scoreboard_id})
     .orFail(() => {
-        const error = new Error('Scoreboard Was Not Found. Was it deleted?');
-        throw error;
+        throw ScoreboardNotFoundError;
     })
     .then((scoreboard) => {
         if (scoreboard.userExists(user.id)) {
@@ -82,8 +81,7 @@ scoreboardSchema.statics.addUserToScoreboard = function addUserToScoreboard(user
 scoreboardSchema.statics.updateScore = function updateScore(scoreboard_id, caller_id, amount) {
     return this.findById(scoreboard_id, { state: 1, name: 1, players: 1 })
     .orFail(() => {
-        const error = new Error('Scoreboard was not found');
-        throw error;
+        throw ScoreboardNotFoundError;
     })
     .then((scoreboard) => {
         if (scoreboard.state == 'lobby') {
@@ -124,8 +122,7 @@ scoreboardSchema.statics.updateScore = function updateScore(scoreboard_id, calle
 scoreboardSchema.statics.getPlayerPositions = function getPlayerPositions(scoreboard_id, limit, caller_id) {
     return this.findOne({ _id: scoreboard_id}, { name: 1, players: 1, _id: 0 })
     .orFail(() => {
-        const error = new Error('Scoreboard was not found');
-        throw error;
+        throw ScoreboardNotFoundError;
     })
     .then((scoreboard) => {
         let { players } = scoreboard;
