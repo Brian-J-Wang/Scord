@@ -1,7 +1,7 @@
 import express from "express";
 import { Request, Response } from "express";
 import { parseAutocomplete, parseInteraction } from "../utils/parseInteraction";
-import Scoreboards from "../models/scoreboard";
+import Scoreboards from "../Models/scoreboard";
 import { getGuildScoreboards, getUsersFromScoreboard } from "../controller/autocompleteController";
 
 const autocompleteRouter = express.Router();

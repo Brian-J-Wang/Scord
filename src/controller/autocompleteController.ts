@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Scoreboards from "../models/scoreboard";
+import Scoreboards from "../Models/scoreboard";
 import { ScoreboardNotFoundError } from "../utils/error";
 
 export function getGuildScoreboards(req : Request, res : Response) {

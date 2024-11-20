@@ -1,4 +1,4 @@
-import Scoreboards from "../models/scoreboard";
+import Scoreboards from "../Models/scoreboard";
 import { Request, Response } from "express";
 import { formatLeaderboard, Leaderboard, LeaderboardOptions } from "../utils/leaderboardFormatter";
 

@@ -7,7 +7,14 @@ import autocompleteRouter from "./routers/autocompleteRouter";
 import { InteractionResponseType } from "discord-interactions";
 import componentRouter from "./routers/componentRouter";
 
-mongoose.connect('mongodb://127.0.0.1:27017/scorebot_db');
+require('dotenv').config();
+
+mongoose.connect(process.env.uri ?? '')
+.then(() => {
+    console.log("connected successfully to mongoDB");
+}).catch(() => {
+    console.error("cannot connect to database");
+});
 
 const app = express();
 const port = 3000

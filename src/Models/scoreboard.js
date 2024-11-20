@@ -1,4 +1,4 @@
-import playerDataSchema from './playerData';
+import playerDataSchema from "./playerData";
 const mongoose = require('mongoose');
 
 /*

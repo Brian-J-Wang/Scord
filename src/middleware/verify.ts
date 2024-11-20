@@ -3,6 +3,8 @@ require('dotenv').config();
 import nacl from "tweetnacl";
 
 export default function verify(req: Request, res: Response, next : NextFunction) {
+    console.log('verifying');
+
     const body = Buffer.from(JSON.stringify(req.body), "utf-8");
 
     const signature = req.get("X-Signature-Ed25519");
