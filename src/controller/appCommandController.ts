@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Scoreboards from "../Models/scoreboard";
+import Scoreboards from "../models/scoreboard";
 import { Interaction } from "../utils/parseInteraction";
 import { formatLeaderboard, Leaderboard, LeaderboardOptions } from "../utils/leaderboardFormatter";
 import { InteractionResponseType } from "discord-interactions";
