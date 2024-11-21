@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon ./dist/app.js",
     "compile": "npx tsc",
-    "start": "node ./dist/app.js"
+    "start": "node ./dist/index.js"
   },
   "author": "Brian Wang",
   "license": "ISC",
