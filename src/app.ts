@@ -17,7 +17,7 @@ mongoose.connect(process.env.uri ?? '')
 });
 
 const app = express();
-const port = process.env.port ?? 3000;
+const port = Number.parseInt(process.env.port ?? '3000') ;
 
 app.use(express.json());
 
@@ -37,6 +37,6 @@ app.use('/component', componentRouter)
 
 app.use('/autocomplete', autocompleteRouter);
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', 128 , () => {
     console.log(`listening in on port ${port}`);
 })
