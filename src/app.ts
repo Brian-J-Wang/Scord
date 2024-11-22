@@ -6,6 +6,8 @@ import appCommandRouter from "./routers/appCommandRouter";
 import autocompleteRouter from "./routers/autocompleteRouter";
 import { InteractionResponseType } from "discord-interactions";
 import componentRouter from "./routers/componentRouter";
+import { readFileSync } from "fs";
+import { createServer } from "https";
 
 require('dotenv').config();
 
@@ -37,6 +39,12 @@ app.use('/component', componentRouter)
 
 app.use('/autocomplete', autocompleteRouter);
 
-app.listen(port, '0.0.0.0', 128 , () => {
+const httpOptions = {
+    key: readFileSync('/etc/letsencrypt/live/interaction.scordboard.com/privkey.pem'),
+    cert: readFileSync('/etc/letsencrypt/live/interaction.scordboard.com/privkey.pem'),
+    ca: readFileSync('/etc/letsencrypt/live/interaction.scordboard.com/fullchain.pem'),
+}
+
+createServer(httpOptions, app).listen(port, '0.0.0.0', () => {
     console.log(`listening in on port ${port}`);
 })
