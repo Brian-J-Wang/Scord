@@ -41,7 +41,7 @@ app.use('/autocomplete', autocompleteRouter);
 
 const httpOptions = {
     key: readFileSync('/etc/letsencrypt/live/interaction.scordboard.com/privkey.pem'),
-    cert: readFileSync('/etc/letsencrypt/live/interaction.scordboard.com/privkey.pem'),
+    cert: readFileSync('/etc/letsencrypt/live/interaction.scordboard.com/cert.pem'),
     ca: readFileSync('/etc/letsencrypt/live/interaction.scordboard.com/fullchain.pem'),
 }
 
