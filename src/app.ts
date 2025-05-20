@@ -44,11 +44,17 @@ if (process.env.NODE_ENV == "development") {
         console.log(`Listening in on port: ${port}, DEV`)
     })
 } else {
-    const httpOptions = {
-        key: readFileSync('/etc/letsencrypt/live/interaction.scordboard.com/privkey.pem'),
-        cert: readFileSync('/etc/letsencrypt/live/interaction.scordboard.com/cert.pem'),
-        ca: readFileSync('/etc/letsencrypt/live/interaction.scordboard.com/fullchain.pem'),
-    };
+    let httpOptions = {}
+
+    try {
+        httpOptions = {
+            key: readFileSync('/etc/letsencrypt/live/interaction.scordboard.com/privkey.pem'),
+            cert: readFileSync('/etc/letsencrypt/live/interaction.scordboard.com/cert.pem'),
+            ca: readFileSync('/etc/letsencrypt/live/interaction.scordboard.com/fullchain.pem'),
+        };
+    } catch (error) {
+        console.log("Cannot find ssl certifications");
+    }
     
     createServer(httpOptions, app).listen(port, '0.0.0.0', () => {
         console.log(`Listening in on port: ${port}, P`);
